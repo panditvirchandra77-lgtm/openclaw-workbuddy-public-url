@@ -391,6 +391,24 @@ protected hai.
 
 ---
 
+## Author
+
+**GitHub:** [`@panditvirchandra77-lgtm`](https://github.com/panditvirchandra77-lgtm)
+
+Is guide ka author, aur original
+[`manus-dashboard-public`](https://github.com/panditvirchandra77-lgtm/manus-dashboard-public)
+repo ka bhi. Sandbox pe OpenClaw chalana, 403 `proxy_attribution_required` ka
+root cause dhoondhna aur bina tunnel ke public URL nikalna — sab isi account ka kaam.
+
+| | |
+| --- | --- |
+| **Profile** | https://github.com/panditvirchandra77-lgtm |
+| **Repos** | https://github.com/panditvirchandra77-lgtm?tab=repositories |
+| **Issues welcome** | https://github.com/panditvirchandra77-lgtm/openclaw-workbuddy-public-url/issues |
+
+> Agar aapko ye guide kaam aaye to repo ko ⭐ star kar do — doosron ko dhoondhne
+> me help milti hai.
+
 ## Files
 
 | Path | What |
