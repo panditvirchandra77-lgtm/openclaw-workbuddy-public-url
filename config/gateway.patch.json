@@ -1,0 +1,15 @@
+{
+  "gateway": {
+    "mode": "local",
+    "auth": {
+      "mode": "token",
+      "token": "<generate with: python3 -c \"import secrets;print(secrets.token_hex(24))\">"
+    },
+    "bind": "lan",
+    "trustedProxies": ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"],
+    "publicOrigin": "https://<your-app-id>.sg2.agentos-app.run",
+    "controlUi": {
+      "allowedOrigins": ["https://<your-app-id>.sg2.agentos-app.run"]
+    }
+  }
+}

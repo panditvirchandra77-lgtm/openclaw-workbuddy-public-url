@@ -1,0 +1,9 @@
+# Never commit secrets
+openclaw.json
+*.bak.*
+.env
+*.token
+
+node_modules/
+*.log
+.DS_Store
