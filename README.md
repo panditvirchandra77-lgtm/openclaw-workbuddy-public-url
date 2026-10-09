@@ -25,6 +25,32 @@ Adapted from
 
 ---
 
+## Problem
+
+Do alag problems hain — dono ko alag tareeke se solve karna padta hai.
+
+**1. Dashboard sirf loopback par sun raha hai.**
+OpenClaw gateway `127.0.0.1:18789` par bind hota hai. Sandbox ke bahar se koi
+direct public address nahi — isliye koi na koi reverse proxy chahiye.
+
+**2. Proxy lagate hi 403 milta hai.** Proxy ke peeche se request jaate hi
+dashboard ye deta hai:
+
+```json
+{"error":{"message":"Proxy client attribution is required. Configure gateway.trustedProxies narrowly...","type":"proxy_attribution_required"}}
+```
+
+Aur ye wala ilaaj — `gateway.trustedProxies` me proxy ka IP daalna — **is sandbox
+par kaam nahi karta**. Kyun, wo [Part 7](#part-7--403-ka-asli-root-cause) me
+source code ke saath likha hai.
+
+> **Note:** agar aap Manus box par hain to problem thodi alag hai — wahan proxy ka
+> client IP `10.x.x.x` hota hai (loopback nahi), isliye wahan `trustedProxies` me
+> CIDR daalna hi sahi fix hai. Dono cases ka comparison
+> [Differences from the Manus guide](#differences-from-the-manus-guide) me hai.
+
+---
+
 ## Architecture
 
 ```
