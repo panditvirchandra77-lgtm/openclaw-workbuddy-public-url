@@ -497,6 +497,37 @@ root cause dhoondhna aur bina tunnel ke public URL nikalna — sab isi account k
 > Agar aapko ye guide kaam aaye to repo ko ⭐ star kar do — doosron ko dhoondhne
 > me help milti hai.
 
+## Tools Istemal Kiye
+
+| Tool | Kaam | Example |
+| --- | --- | --- |
+| `openclaw config patch/get/validate` | Config ko merge-safe badalna + schema check | `openclaw config validate` |
+| `openclaw gateway run/status` | Gateway chalana, health check | `ss -ltnp \| grep 18789` |
+| `openclaw dashboard --json` | Dashboard URL + token nikalna | `openclaw dashboard --json` |
+| `openclaw devices approve` | Browser ko Control UI allow karna | `openclaw devices approve <id>` |
+| `openclaw models set` / `models auth` | Provider + default model set karna | `openclaw models set <ref>` |
+| `ss` (netstat) | Gateway PID + port `18789` dhundhna | `ss -ltnp \| grep 18789` |
+| `jq` | Config JSON safely modify karna | `jq '.gateway.bind = "lan"' cfg.json` |
+| `curl` | Public URL verify (HTTP code + title) | `curl -s -o /dev/null -w '%{http_code}' URL` |
+| `grep` | Log se proxy IP / error reason nikalna | `grep "unattributable" /tmp/openclaw/*.log` |
+| `node` (zero-dep) | Reverse proxy: HTTP + WebSocket upgrade | `node proxy/server.js` |
+| `bash` loop (watchdog) | Gateway auto-restart (systemd nahi hai) | `./openclaw-watchdog.sh --background` |
+| `nvm` | Node 26 pin karna (OpenClaw ko ≥22.22.3 chahiye) | `nvm install 26 && nvm use 26` |
+| `openssl rand -hex 24` | Naya gateway token banana | `openssl rand -hex 24` |
+| `getent hosts` / `curl -I` | Public hostname resolve + status code | `getent hosts <host>` |
+| `md5sum` | Do files identical hain ya nahi (temple wala case) | `md5sum a.html b.html` |
+| `git` + GitHub REST API | Repo push, metadata (topics/homepage/stars) | `gh api repos/:owner/:repo` |
+
+**Sabse kaam ke 3:**
+
+1. `grep "unattributable" /tmp/openclaw/*.log | grep -oP 'from \K[0-9.]+'` — 403 ka
+   peer IP batata hai, aur isse hi decide hota hai ki fix `trustedProxies` hai ya
+   header-strip ([Root Cause](#root-cause) dekho).
+2. `ss -ltnp | grep 18789` — gateway zinda hai ya nahi, 2 second me.
+3. `curl -s URL | grep -o '<title>.*</title>'` — 200 aane ke baad bhi confirm ho
+   jata hai ki sahi page mil raha hai (`<title>OpenClaw Control</title>`), koi
+   login/error page nahi.
+
 ## Files
 
 | Path | What |
