@@ -51,6 +51,68 @@ source code ke saath likha hai.
 
 ---
 
+## Root Cause
+
+403 koi random bug nahi hai — OpenClaw ka ingress-attribution logic **jaan-bujh
+kar** aisa karta hai. `dist/worker/worker.mjs` me asli function (thoda saaf kiya
+hua):
+
+```js
+function resolveGatewayIngressAttribution({ req, trustedProxies, allowRealIpFallback }) {
+  const peer         = req.socket?.remoteAddress ?? "unknown";
+  const hasForwarded = hasForwardedRequestHeaders(req);  // forwarded | x-real-ip | x-forwarded-*
+  const hasTailscale = hasTailscaleOwnedHeaders(req);    // tailscale-*
+
+  // 1) loopback se direct request, koi forwarded header nahi => theek
+  if (isLoopbackAddress(peer) && !hasForwarded && !hasTailscale)
+    return attributed("direct-local", peer);                       // ✅ 200
+
+  // 2) peer trustedProxies me hai => headers se client IP nikaalo
+  if (isTrustedProxyAddress(peer, trustedProxies)) {
+    const clientIp = resolveRequestClientIpFromHeaders(req, trustedProxies, allowRealIpFallback);
+    return !clientIp || isLoopbackAddress(clientIp)
+      ? unattributableProxy(peer)                                  // ❌ 403
+      : attributed("trusted-proxy", clientIp);                     // ✅ 200
+  }
+
+  // 3) peer trusted nahi + forwarded headers hain => 403
+  return hasForwarded || hasTailscale
+    ? unattributableProxy(peer)                                    // ❌ 403
+    : attributed("direct-remote", peer);                           // ✅ 200
+}
+```
+
+### Decision table
+
+| Peer (proxy ka IP) | Forwarded headers | `trustedProxies` me? | Result |
+| --- | --- | --- | --- |
+| `127.0.0.1` | ❌ koi nahi | — | ✅ `direct-local` |
+| `127.0.0.1` | ✅ present | — | ❌ **403** |
+| `10.x.x.x` | ✅ real client IP | ✅ CIDR me | ✅ `trusted-proxy` |
+| `10.x.x.x` | resolved IP `127.0.0.1` | ✅ CIDR me | ❌ **403** |
+| `10.x.x.x` | ✅ present | ❌ nahi | ❌ **403** |
+| koi bhi non-loopback | ❌ koi nahi | ❌ nahi | ✅ `direct-remote` |
+
+### Isse do cheezein clear hoti hain
+
+1. **`trustedProxies` me `127.0.0.1` daalna bekaar hai.** Rule 2 ke hisaab se
+   resolved client IP loopback hi niklega → `isLoopbackAddress(clientIp)` → 403.
+   Isliye is sandbox par sirf headers **hatana** kaam karta hai: tab peer
+   `127.0.0.1` + `hasForwarded=false` → rule 1 → `direct-local` ✅.
+
+2. **`x-forwarded-*` ko rewrite karna bhi bekaar hai** (`127.0.0.1` se bhar do
+   to bhi). Header *maujood* hona hi kaafi hai — `hasForwardedRequestHeaders`
+   bas ye check karta hai:
+   ```js
+   name === "forwarded" || name === "x-real-ip" || name.startsWith("x-forwarded-")
+   ```
+   Isliye fix = **delete**, rewrite nahi.
+
+Poora walkthrough (kaise dhoondha, kaunse log, kaunsi file) —
+[Part 7](#part-7--403-ka-asli-root-cause) me hai.
+
+---
+
 ## Architecture
 
 ```
